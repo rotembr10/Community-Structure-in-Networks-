@@ -84,4 +84,9 @@ spmat* spmat_allocate_array(int n, int nnz) {
 }
 
 
+int	rowNNZ(struct _spmat *A, int i) {
+	return ((A->rowptr)[i+1] - (A->rowptr)[i]);
+}
+
+
 

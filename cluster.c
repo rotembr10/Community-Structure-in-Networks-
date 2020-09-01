@@ -3,21 +3,32 @@
 #include <math.h>
 #include <assert.h>
 #include "spmat.h"
+#include "community.h"
+#include "Queue.h"
+
+
 
 #define ZERO 0.0001
 #define IS_POSITIVE(X) ((X) > ZERO)
 
+
+
 /* -c -fmessage-length=0 -ansi -Wall -Wextra -Werror -pedantic-errors */
 int main(int argc, char* argv[])
 {
+
 	FILE* file;
 	char* inputFileName;
 	/*char* outputFileName;*/
 	int n, t, i, j, l, M, k_i;
 	int* kVec;
+	int* orgIndices;
 	double* rowVec;
 	spmat* sm;
+	community* comWholeGraph;
 	argc+=0;
+
+
 
 	inputFileName = argv[1];
 	/*outputFileName = argv[2];*/
@@ -64,8 +75,9 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-
-	/*create sparse matrix to the matrix corresponding the graph*/
+	/*iterate again over the input graph to calculate:
+	 * 'sm' = the sparse matrix corresponding the graph
+	 * */
 	rewind(file);
 	t = fseek(file, sizeof(int) ,SEEK_CUR);
 	if (t != 0) {
@@ -86,6 +98,7 @@ int main(int argc, char* argv[])
 		for (j = 0; j < n; j++)
 		{
 			rowVec[j] = 0;
+
 		}
 		for (j = 0; j < k_i; j++)
 		{
@@ -100,21 +113,36 @@ int main(int argc, char* argv[])
 	}
 	free(rowVec);
 	fclose(file);
+	/* -finished reading from file- */
 
 
 
 
 
+	/* create community for the WHOLE graph */
+	orgIndices = (int*) malloc(n * sizeof(int));
+	for (i = 0; i < n; i++)
+	{
+		orgIndices[i] = i;
+	}
+	comWholeGraph = create_community(sm, orgIndices, kVec, M, M);
+	printf("%d", comWholeGraph->M);
 
 
 
 
-	sm->free(sm);
-	free(kVec);
+	free_community(comWholeGraph);
+
+
+	/*Algorithm 3*/
+
+
+
 
 	/*On a successful execution the main function return 0*/
 	return 0;
 }
+
 
 
 

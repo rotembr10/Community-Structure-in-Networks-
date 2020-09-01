@@ -15,6 +15,7 @@ typedef struct _spmat {
 	/* Multiplies matrix A by vector v, into result (result is pre-allocated) */
 	void	(*mult)(const struct _spmat *A, const double *v, double *result);
 
+
 	/* Private field for inner implementation.
 	 * Should not be read or modified externally */
 	int	*values;
@@ -25,5 +26,8 @@ typedef struct _spmat {
 
 /* Allocates a new arrays sparse matrix of size n with nnz non-zero elements */
 spmat* spmat_allocate_array(int n, int nnz);
+
+/* Return the number of non-zero elements in row i of the matrix */
+int	rowNNZ(struct _spmat *A, int i);
 
 #endif
