@@ -5,33 +5,33 @@
 
 /* Each struct represents community in the graph */
 typedef struct _community {
-	/* Pointer to the sparse matrix (A) implemented in spmat.h */
-	spmat* sm;
+    /* Pointer to the sparse matrix (A) implemented in spmat.h */
+    spmat* sm;
 
-	/* In our implementation, when splitting community C into two sub-communities C1,C2,
-	 *  we represent them by 2 new sparse matrices with new indices. for example:
-	 *  If C is sparse matrix of size 5x5 corresponding the whole graph with vertices: 0,1,2,3,4,
-	 *  and we split C into the communities C1: 0,2 and C2: 1,3,4, we need to remember which vertices
-	 *  in the original graph correspond to each community:
-	 *  	C1 has sparse matrix 2x2 and indices 0,1 are indices 0,2 in the original matrix
-	 *  	C2 has sparse matrix 3x3 and indices 0,1,2 are indices 1,3,4 in the original matrix
-	 */
-	int* originalIndices;
+    /* In our implementation, when splitting community C into two sub-communities C1,C2,
+     *  we represent them by 2 new sparse matrices with new indices. for example:
+     *  If C is sparse matrix of size 5x5 corresponding the whole graph with vertices: 0,1,2,3,4,
+     *  and we split C into the communities C1: 0,2 and C2: 1,3,4, we need to remember which vertices
+     *  in the original graph correspond to each community:
+     *  	C1 has sparse matrix 2x2 and indices 0,1 are indices 0,2 in the original matrix
+     *  	C2 has sparse matrix 3x3 and indices 0,1,2 are indices 1,3,4 in the original matrix
+     */
+    int* originalIndices;
 
-	/* Vector that contains the degrees of the vertices corresponding the COMMUNITY sm */
-	int* kVec;
+    /* Vector that contains the degrees of the vertices corresponding the COMMUNITY sm */
+    int* kVec;
 
-	/* m = sum of k_i of the COMMUNITY (not the whole graph!), i.e.,
-	 *     sum of the degrees of the vertices in subgraph corresponding the community. */
-	int m;
+    /* m = sum of k_i of the COMMUNITY (not the whole graph!), i.e.,
+     *     sum of the degrees of the vertices in subgraph corresponding the community. */
+    int m;
 
-	/* M = sum of k_i of the WHOLE graph (not the community!).
-	 * All communities have the same M. */
-	int M;
+    /* M = sum of k_i of the WHOLE graph (not the community!).
+     * All communities have the same M. */
+    int M;
 
-	/* This value equal to ||B^hat[g]||_1, i.e., the 1-norm of the matrix of the community.
-	 * Calculated by the matrixShifting function in this module. */
-	double norm1;
+    /* This value equal to ||B^hat[g]||_1, i.e., the 1-norm of the matrix of the community.
+     * Calculated by the matrixShifting function in this module. */
+    double norm1;
 } community;
 
 
@@ -74,8 +74,11 @@ int kProd(struct _community *C, int i, int j);
 
 
 
+void power_iteration(community* C, double* eigenValue,double** eigenVector);
 
+void leading_eigenValue(community* C, double* eigenValue,double* eigenVector) ;
 
+void calculateBhat(community* C,double** C_i, int i);
 /*  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  */
 /* 	!!~~~FUNCTIONS I DIDN'T IMPLEMENT~~~!!  */
 /*  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  */

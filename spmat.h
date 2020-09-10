@@ -2,25 +2,25 @@
 #define _SPMAT_H
 
 typedef struct _spmat {
-	/* Matrix size (n*n) */
-	int		n;
+    /* Matrix size (n*n) */
+    int		n;
 
-	/* Adds row i the matrix. Called before any other call,
-	 * exactly n times in order (i = 0 to n-1) */
-	void	(*add_row)(struct _spmat *A, const double *row, int i);
+    /* Adds row i the matrix. Called before any other call,
+     * exactly n times in order (i = 0 to n-1) */
+    void	(*add_row)(struct _spmat *A, const double *row, int i);
 
-	/* Frees all resources used by A */
-	void	(*free)(struct _spmat *A);
+    /* Frees all resources used by A */
+    void	(*free)(struct _spmat *A);
 
-	/* Multiplies matrix A by vector v, into result (result is pre-allocated) */
-	void	(*mult)(const struct _spmat *A, const double *v, double *result);
+    /* Multiplies matrix A by vector v, into result (result is pre-allocated) */
+    void	(*mult)(const struct _spmat *A, const double *v, double *result);
 
 
-	/* Private field for inner implementation.
-	 * Should not be read or modified externally */
-	int	*values;
-	int *colind;
-	int *rowptr;
+    /* Private field for inner implementation.
+     * Should not be read or modified externally */
+    int	*values;
+    int *colind;
+    int *rowptr;
 } spmat;
 
 

@@ -6,19 +6,24 @@
 
 /* The queue, front stores the front node of LL and rear stores the
    last node of LL */
-struct Queue {
-	struct QNode *front, *rear;
-};
+typedef struct Queue {
+    struct QNode *front, *rear;
+}Queue;
+
+typedef struct QNode {
+    community* com;
+    struct QNode* next;
+} QNode;
 
 
 /* A utility function to create an empty queue */
-struct Queue* createQueue();
+Queue* createQueue();
 
 /* The function to add a community pointer c to q */
-void enQueue(struct Queue* q, community* c);
+void enQueue(Queue* q, community* c);
 
 /* Function to remove a community pointer from given queue q */
-void deQueue(struct Queue* q);
+void deQueue(Queue* q);
 
 
 #endif /* QUEUE_H_ */
