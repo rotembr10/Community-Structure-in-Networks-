@@ -1,56 +1,76 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <stdio.h>
 #include "divisionTwo.h"
 #include "community.h"
 #include "leadingEigen.h"
+#include "modularityMaximization.h"
+#include "matrixCalculation.h"
+#include "error.h"
+
 #define ZERO 0.00001
 
-double calculateDeltaQ(community* C, double* s)
+double* Algorithm2 (community* C, group* g)
 {
-    double res=0,mult=0;
-    int i,j,n;
-    n = C->sm->n;
-    for(i=0;i<n;++i){
-        double* B_hat = (double*)calloc(n,sizeof(double));
-        calculateBhat(C,&B_hat,i);
-        for(j=0;j<n;++j){
-            mult += s[j] * B_hat[j];
+    int i, n;
+    double eigenValue, Q, *eigenVector  = NULL, *s = NULL;
+
+    n = g->size;
+
+    s = (double*)malloc(n * sizeof(double));
+    eigenVector = (double*)malloc(n * sizeof(double));
+
+    if(s == NULL || eigenVector == NULL) MallocFailed
+
+    power_iteration(C, &eigenValue, &eigenVector, g);
+
+
+    if(eigenValue <= ZERO){
+        for(i = 0; i < n; i++)
+            s[i] = 1;
+        free(eigenVector);
+        return s;
+    }
+    else {
+        /*initialize vector s*/
+        for (i = 0; i < n; ++i) {
+            if (eigenVector[i] > ZERO) {
+                s[i] = 1;
+            } else {
+                s[i] = -1;
+            }
         }
-        res += mult * s[i];
-        mult = 0;
-        free(B_hat);
+        free(eigenVector);
     }
 
-    return (double)res/2;
+    Q = calculateDeltaQ(C, s, g) ;
+
+    if(Q <= ZERO){
+        for(i = 0; i < n; i++)
+            s[i] = 1;
+        return s;
+    }
+
+    Algorithm4(g, C, s);
+
+    return s;
 }
 
-int* Algorithm2 (community* C)
+double calculateDeltaQ(community* C, double * s, group* g)
 {
-    int i,n;
-    double eigenValue, Q;
-    double* eigenVector;
-    int* s;
+    double Q = 0, *B_v;
+    int i, n;
 
-    s = (int*)malloc(n * sizeof(int));
-    n = C->sm->n;
+    n = g->size;
+    B_v = (double*) malloc(n * sizeof(double));
+    if(B_v == NULL) MallocFailed
 
-    eigenVector = (double*)calloc(n , sizeof(double));
-    power_iteration(C,&eigenValue,&eigenVector);
+    calculate_B_hat_mult_v(C, g, s, B_v, 0);
 
-    if(eigenValue<=ZERO)
-        return NULL ;
-   /*initialize vector s*/
-    for (i = 0; i <n ; ++i) {
-        if (eigenVector[i] > ZERO) {
-            s[i] = 1;
-        } else {
-            s[i] = -1;
-        }
+    for (i = 0; i < g -> size; ++i) {
+        Q += (s[i] * B_v[i]);
     }
-    Q = calculateDeltaQ(C,s);
-    if(Q<=ZERO){
-        return NULL;
-    }
-    return s;
+
+    free(B_v);
+    return Q;
+
 }

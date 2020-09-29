@@ -1,101 +1,82 @@
 #include <stdio.h>
+#include <time.h>
 #include <stdlib.h>
-//#include <math.h>
-//#include <assert.h>
 #include "spmat.h"
 #include "community.h"
-#include "Queue.h"
-#include "leadingEigen.h"
-
-
-
+#include "modularityGroups.h"
+#include "error.h"
 
 #define ZERO 0.00001
-#define IS_POSITIVE(X) ((X) > ZERO)
 
 
-
-/* -c -fmessage-length=0 -ansi -Wall -Wextra -Werror -pedantic-errors */
 int main(int argc, char* argv[])
 {
-
-    FILE* file;
-    char* inputFileName;
-    /*char* outputFileName;*/
-    int n, t, i, j, l, M, k_i;
-    int* kVec;
-    int* orgIndices;
+    FILE* file = NULL;
+    char* inputFileName, *outputFileName;
+    int n, t, i, j, l, M, k_i, *kVec;
     double* rowVec;
-    spmat* sm;
-    community* comWholeGraph;
-    argc+=0;
-
-
+    spmat* A;
+    community* C;
+    clock_t startP,endP;
+    (void)argc;
 
     inputFileName = argv[1];
-    /*outputFileName = argv[2];*/
+    outputFileName = argv[2];
 
-    file = fopen(inputFileName, "r");
-    if (file == NULL) {
-        printf("Failed to open input file");
-        exit(EXIT_FAILURE);
-    }
+    startP = clock();
+
+    file = fopen(inputFileName, "rb");
+    if (file == NULL) FailedOpen
+
 
     /*n = |V|, i.e., the number of vertices in the graph*/
     t = fread(&n, sizeof(int), 1, file);
-    if (t != 1) {
-        printf("Failed to read from input file");
-        exit(EXIT_FAILURE);
-    }
+    if (t != 1) FailedRead
+    if (n == 0) ZeroNodes
+
 
     /*iterate over the input graph to calculate:
      *  'kVec' = vector that contains the degrees of the vertices in the graph
      *  'M' = sum of k_i = the number of non-zero elements in the adjacency matrix*/
+
     kVec = (int*) malloc(n * sizeof(int));
+    if(kVec == NULL) MallocFailed
+
     M = 0;
     for (i = 0; i < n; i++)
     {
         /*k_i = the degree of vertex i in the graph*/
         t = fread(&k_i, sizeof(int), 1, file);
-        if (t != 1) {
-            printf("Failed to read from input file");
-            exit(EXIT_FAILURE);
-        }
+        if (t != 1) FailedRead
+
         kVec[i] = k_i;
         M += k_i;
 
         /*skip to the next k_i in the file*/
         t = fseek(file, k_i*sizeof(int) ,SEEK_CUR);
-        if (t != 0) {
-            printf("Failed to skip parts of the input file");
-            exit(EXIT_FAILURE);
-        }
+        if (t != 0) FailedFseek
     }
+
     /*if M=0, then (k_i*k_j)/M is Undefined*/
-    if (M == 0) {
-        printf("Division by zero");
-        exit(EXIT_FAILURE);
-    }
+    if (M == 0) ZeroEdges
 
     /*iterate again over the input graph to calculate:
      * 'sm' = the sparse matrix corresponding the graph
      * */
     rewind(file);
     t = fseek(file, sizeof(int) ,SEEK_CUR);
-    if (t != 0) {
-        printf("Failed to skip parts of the input file");
-        exit(EXIT_FAILURE);
-    }
-    sm = spmat_allocate_array(n, M);
+    if (t != 0) FailedFseek
+
+    A = spmat_allocate_array(n, M);
     rowVec = (double*) malloc(n * sizeof(double));
+    if(rowVec == NULL) MallocFailed
+
     for (i = 0; i < n; i++)
     {
         /*k_i = the degree of vertex i in the graph*/
         t = fread(&k_i, sizeof(int), 1, file);
-        if (t != 1) {
-            printf("Failed to read from input file");
-            exit(EXIT_FAILURE);
-        }
+        if (t != 1) FailedRead
+
         /*calculate row i of the matrix and adding it to the sparse matrix*/
         for (j = 0; j < n; j++)
         {
@@ -105,47 +86,26 @@ int main(int argc, char* argv[])
         for (j = 0; j < k_i; j++)
         {
             t = fread(&l, sizeof(int), 1, file);
-            if (t != 1) {
-                printf("Failed to read from input file");
-                exit(EXIT_FAILURE);
-            }
+            if (t != 1) FailedRead
             rowVec[l] = 1;
         }
-        sm->add_row(sm, rowVec, i);
+        A->add_row(A, rowVec, i);
     }
     free(rowVec);
     fclose(file);
-    /* -finished reading from file- */
+    /* -finished reading from the file- */
 
+    C = create_community(A, kVec, M);
+    Algorithm3(C, outputFileName);
 
+    free_community(C);
 
-
-
-    /* create community for the WHOLE graph */
-    orgIndices = (int*) malloc(n * sizeof(int));
-    for (i = 0; i < n; i++)
-    {
-        orgIndices[i] = i;
-    }
-    comWholeGraph = create_community(sm, orgIndices, kVec, M, M);
-    printf("%d", comWholeGraph->M);
-
-
-
-
-    free_community(comWholeGraph);
-
-
-    /*Algorithm 3*/
-
-
-
+    endP = clock();
+    printf("Execution took %f seconds\n", ((double)(endP-startP)/CLOCKS_PER_SEC));
 
     /*On a successful execution the main function return 0*/
     return 0;
 }
-
-
 
 
 
