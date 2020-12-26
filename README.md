@@ -4,7 +4,7 @@
 Implementation of algorithm for detecting community structures (or clusters) in a network using Newman's methods to maximize modularity (see reference below).
 
 <p align="center">
-  <img src="Fig1.PNG" width="50%" height="50%">
+  <img src="community_structure.PNG" width="50%" height="50%">
 </p>
 
 > **_Reference:_**
